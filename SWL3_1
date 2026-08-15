@@ -1,0 +1,172 @@
+
+!
+! Last configuration change at 13:11:58 UTC Sat Aug 15 2026
+!
+version 15.1
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+service compress-config
+!
+hostname SWL3_1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+no ipv6 cef
+ipv6 multicast rpf use-bgp
+!
+ip cef
+!
+!
+!
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+!
+!
+!
+vlan internal allocation policy ascending
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+interface Port-channel1
+ no shutdown
+ switchport
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet0/0
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet0/1
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet0/2
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet0/3
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet1/0
+ no shutdown
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 1 mode active
+!
+interface Ethernet1/1
+ no shutdown
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 1 mode active
+!
+interface Ethernet1/2
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet1/3
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet2/0
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet2/1
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet2/2
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet2/3
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet3/0
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet3/1
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet3/2
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet3/3
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet4/0
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet4/1
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet4/2
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Ethernet4/3
+ no shutdown
+ shutdown
+ duplex auto
+!
+interface Vlan10
+ no shutdown
+ ip address 192.168.10.1 255.255.255.0
+!
+!
+no ip http server
+!
+!
+!
+!
+!
+control-plane
+!
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+!
+end
