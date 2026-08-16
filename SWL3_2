@@ -1,6 +1,6 @@
 
 !
-! Last configuration change at 14:15:18 UTC Sat Aug 15 2026
+! Last configuration change at 19:34:08 UTC Sun Aug 16 2026
 !
 version 15.1
 service timestamps debug datetime msec
@@ -19,13 +19,18 @@ no aaa new-model
 no ipv6 cef
 ipv6 multicast rpf use-bgp
 !
+no ip domain-lookup
 ip cef
 !
 !
+no ip igmp snooping
 !
 !
-spanning-tree mode pvst
+!
+spanning-tree mode rapid-pvst
 spanning-tree extend system-id
+spanning-tree vlan 10 priority 28672
+spanning-tree vlan 20 priority 24576
 !
 !
 !
@@ -47,93 +52,130 @@ interface Port-channel1
  switchport trunk encapsulation dot1q
  switchport mode trunk
 !
+interface Port-channel2
+ no shutdown
+ switchport
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
 interface Ethernet0/0
  no shutdown
- shutdown
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 2 mode active
 !
 interface Ethernet0/1
  no shutdown
- shutdown
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 2 mode active
 !
 interface Ethernet0/2
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet0/3
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet1/0
  no shutdown
  switchport trunk encapsulation dot1q
  switchport mode trunk
+ duplex auto
  channel-group 1 mode active
 !
 interface Ethernet1/1
  no shutdown
  switchport trunk encapsulation dot1q
  switchport mode trunk
+ duplex auto
  channel-group 1 mode active
 !
 interface Ethernet1/2
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet1/3
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet2/0
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet2/1
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet2/2
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet2/3
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet3/0
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet3/1
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet3/2
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet3/3
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet4/0
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet4/1
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet4/2
  no shutdown
  shutdown
+ duplex auto
 !
 interface Ethernet4/3
  no shutdown
  shutdown
+ duplex auto
+!
+interface Vlan10
+ no shutdown
+ ip address 192.168.10.3 255.255.255.0
+ standby 10 ip 192.168.10.1
+ standby 10 preempt
 !
 interface Vlan20
  no shutdown
- ip address 192.168.20.1 255.255.255.0
+ ip address 192.168.20.3 255.255.255.0
+ standby 20 ip 192.168.20.1
+ standby 20 priority 110
+ standby 20 preempt
 !
 !
 no ip http server
@@ -149,5 +191,6 @@ line con 0
  logging synchronous
 line aux 0
 line vty 0 4
+ login
 !
 end
