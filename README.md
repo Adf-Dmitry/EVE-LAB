@@ -1,3 +1,3 @@
 # EVE-LAB
 Multilayer computer network 
-<img width="858" height="563" alt="image" src="https://github.com/user-attachments/assets/8729a0f4-62c4-4279-87c1-109faaef9979" />
+<img width="667" height="605" alt="image" src="https://github.com/user-attachments/assets/133b2613-61e3-4d79-a29a-311d4d12ce49" />
