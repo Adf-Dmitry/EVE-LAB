@@ -1,6 +1,6 @@
 
 !
-! Last configuration change at 14:12:35 UTC Sat Aug 15 2026
+! Last configuration change at 19:41:12 UTC Sun Aug 16 2026
 !
 version 15.1
 service timestamps debug datetime msec
@@ -29,7 +29,8 @@ ipv6 multicast rpf use-bgp
 !
 !
 !
-spanning-tree mode pvst
+!
+spanning-tree mode rapid-pvst
 spanning-tree extend system-id
 !
 !
@@ -78,12 +79,14 @@ interface Ethernet1/0
  no shutdown
  switchport trunk encapsulation dot1q
  switchport mode trunk
+ duplex auto
  channel-group 1 mode active
 !
 interface Ethernet1/1
  no shutdown
  switchport trunk encapsulation dot1q
  switchport mode trunk
+ duplex auto
  channel-group 1 mode active
 !
 interface Ethernet1/2
