@@ -1,6 +1,6 @@
 
 !
-! Last configuration change at 13:11:58 UTC Sat Aug 15 2026
+! Last configuration change at 19:34:28 UTC Sun Aug 16 2026
 !
 version 15.1
 service timestamps debug datetime msec
@@ -19,13 +19,18 @@ no aaa new-model
 no ipv6 cef
 ipv6 multicast rpf use-bgp
 !
+no ip domain-lookup
 ip cef
 !
 !
+no ip igmp snooping
 !
 !
-spanning-tree mode pvst
+!
+spanning-tree mode rapid-pvst
 spanning-tree extend system-id
+spanning-tree vlan 10 priority 24576
+spanning-tree vlan 20 priority 28672
 !
 !
 !
@@ -41,6 +46,12 @@ vlan internal allocation policy ascending
 !
 !
 !
+interface Port-channel2
+ no shutdown
+ switchport
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
 interface Port-channel1
  no shutdown
  switchport
@@ -49,13 +60,15 @@ interface Port-channel1
 !
 interface Ethernet0/0
  no shutdown
- shutdown
- duplex auto
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 2 mode active
 !
 interface Ethernet0/1
  no shutdown
- shutdown
- duplex auto
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 2 mode active
 !
 interface Ethernet0/2
  no shutdown
@@ -71,13 +84,13 @@ interface Ethernet1/0
  no shutdown
  switchport trunk encapsulation dot1q
  switchport mode trunk
- channel-group 1 mode active
+ channel-group 1 mode on
 !
 interface Ethernet1/1
  no shutdown
  switchport trunk encapsulation dot1q
  switchport mode trunk
- channel-group 1 mode active
+ channel-group 1 mode on
 !
 interface Ethernet1/2
  no shutdown
@@ -151,7 +164,16 @@ interface Ethernet4/3
 !
 interface Vlan10
  no shutdown
- ip address 192.168.10.1 255.255.255.0
+ ip address 192.168.10.2 255.255.255.0
+ standby 10 ip 192.168.10.1
+ standby 10 priority 110
+ standby 10 preempt
+!
+interface Vlan20
+ no shutdown
+ ip address 192.168.20.2 255.255.255.0
+ standby 20 ip 192.168.20.1
+ standby 20 preempt
 !
 !
 no ip http server
