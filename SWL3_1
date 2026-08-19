@@ -4,7 +4,7 @@
 enable
 configure terminal
 interface range gigabitEthernet 0/0-3, gigabitEthernet 1/0-3
-shutdown 
+shutdown  
 exit
 !
 ! 2. BASIC TROUBLESHOOTING 
