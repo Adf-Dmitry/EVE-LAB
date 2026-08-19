@@ -3,7 +3,7 @@
 ! 1. FORCE SHUTDOWN 
 enable
 configure terminal
-interface range gigabitEthernet 0/0-3, gigabitEthernet 1/0-3
+interface range gigabitEthernet 0/0-3, gigabitEthernet 1/0-3, gigabitEthernet 2/0-3, gigabitEthernet 3/0-3
 shutdown 
 exit
 !
@@ -34,8 +34,15 @@ exit
 ! 5. VLAN CONFIGURATION 
 vlan 10
 name IT
+!
 vlan 20
 name HR
+!
+vlan 30
+name Admin
+!
+vlan 40
+name SrvFarm
 exit
 !
 ! 6. LACP CONFIGURATION 
@@ -52,6 +59,7 @@ switchport mode trunk
 description LACP TO SW_2
 no shutdown
 exit
+!
 !Port-channel-2
 interface range gigabitEthernet 1/0-1
 description TRUNK TO SWL3_1 
@@ -63,6 +71,76 @@ switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
 description LACP TO SWL3_1
+no shutdown
+exit
+!
+!Port-channel-3
+interface range gigabitEthernet 2/0-1
+description TRUNK TO SW_3 
+channel-group 3 mode active
+no shutdown
+!
+interface port-channel 3
+switchport
+switchport trunk encapsulation dot1q
+switchport mode trunk
+description LACP TO SW_3
+no shutdown
+exit
+!
+!Port-channel-4
+interface range gigabitEthernet 0/2-3
+description TRUNK TO SW_1 
+channel-group 4 mode active
+no shutdown
+!
+interface port-channel 4
+switchport
+switchport trunk encapsulation dot1q
+switchport mode trunk
+description LACP TO SW_1
+no shutdown
+exit
+!
+!Port-channel-5
+interface range gigabitEthernet 3/2-3
+description TRUNK TO ASA_1 
+channel-group 5 mode active
+no shutdown
+!
+interface port-channel 5
+switchport
+switchport trunk encapsulation dot1q
+switchport mode trunk
+description LACP TO ASA_1
+no shutdown
+exit
+!
+!Port-channel-6
+interface range gigabitEthernet 2/2-3
+description TRUNK TO SW_4 
+channel-group 6 mode active
+no shutdown
+!
+interface port-channel 6
+switchport
+switchport trunk encapsulation dot1q
+switchport mode trunk
+description LACP TO SW_4
+no shutdown
+exit
+!
+!Port-channel-7
+interface range gigabitEthernet 3/0-1
+description TRUNK TO ASA_2
+channel-group 7 mode active
+no shutdown
+!
+interface port-channel 7
+switchport
+switchport trunk encapsulation dot1q
+switchport mode trunk
+description LACP TO ASA_2
 no shutdown
 exit
 !
@@ -83,8 +161,28 @@ ip address 192.168.20.3 255.255.255.0
 no shutdown
 standby version 2
 standby 20 ip 192.168.20.1
-standby 20 priority 110
+standby 20 priority 100
 standby 20 preempt 
+exit
+!
+interface vlan 30
+description GATEWAY FOR HR VLAN
+ip address 192.168.30.3 255.255.255.0
+no shutdown
+standby version 2
+standby 30 ip 192.168.30.1
+standby 30 priority 110
+standby 30 preempt 
+exit
+!
+interface vlan 40
+description GATEWAY FOR HR VLAN
+ip address 192.168.40.3 255.255.255.0
+no shutdown
+standby version 2
+standby 40 ip 192.168.40.1
+standby 40 priority 110
+standby 40 preempt 
 exit
 ! 8. SAVE CONFIGURATION
 end
