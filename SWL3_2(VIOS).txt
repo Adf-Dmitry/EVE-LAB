@@ -184,6 +184,11 @@ standby 40 ip 192.168.40.1
 standby 40 priority 110
 standby 40 preempt 
 exit
-! 8. SAVE CONFIGURATION
+!
+!8. SPANNING TREE (PVST)
+spanning-tree vlan 30,40 root primary
+spanning-tree vlan 10,20 root secondary
+end
+!9. SAVE CONFIGURATION
 end
 write memory
