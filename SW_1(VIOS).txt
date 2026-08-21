@@ -20,6 +20,7 @@ alias exec svrb show vrrp brief
 alias exec stp show spanning-tree
 alias exec svbr show vlan brief
 alias exec svlan show vlan
+alias exec stbr show standby br
 !
 ! 4. CONSOLE CONFIGURATION 
 hostname SW_1
