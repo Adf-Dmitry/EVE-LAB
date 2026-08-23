@@ -1,0 +1,97 @@
+!VIOS L2 SWITCH 4
+!
+! 1. FORCE SHUTDOWN 
+enable
+configure terminal
+interface range gigabitEthernet 0/0-3, gigabitEthernet 1/0-3
+shutdown 
+exit
+!
+! 2. BASIC TROUBLESHOOTING 
+vtp mode transparent
+spanning-tree mode rapid-pvst
+!
+! 3. ALIAS CONFIGURATION 
+alias exec seths show etherchannel summary
+alias exec sinb show ip interface brief
+alias exec sis show interface status
+alias exec srun show running-config
+alias exec stbr show standby brief
+alias exec stp show spanning-tree
+alias exec svrb show vrrp brief
+alias exec svbr show vlan brief
+alias exec svlan show vlan
+!
+! 4. CONSOLE CONFIGURATION 
+hostname SW_4
+no ip domain-lookup
+line console 0
+logging synchronous
+exec-timeout 0 0
+history size 256
+exit
+!
+! 5. VLAN CONFIGURATION 
+vlan 10
+name IT
+!
+vlan 20
+name HR
+!
+vlan 30 
+name Admin
+!
+vlan 40
+name SrvFarm
+exit
+!
+! 6. LACP CONFIGURATION 
+!Port-channel-5
+interface range gigabitEthernet 0/0-1
+description TRUNK TO SWL3_1
+channel-group 5 mode active
+no shutdown
+!
+interface port-channel 5 
+switchport
+switchport trunk encapsulation dot1q
+switchport mode trunk
+description LACP TO SWL3_1 
+no shutdown
+exit
+!
+!Port-channel-6
+interface range gigabitEthernet 0/2-3
+description TRUNK TO SWL3_2
+channel-group 6 mode active
+no shutdown
+!
+interface port-channel 6 
+switchport
+switchport trunk encapsulation dot1q
+switchport mode trunk
+description LACP TO SWL3_2 
+no shutdown
+exit
+!
+! 7. ACCESS VLAN CONFIGURATION 	
+interface range gigabitEthernet 1/0-3
+description LINK TO VLAN SRVFARM
+switchport
+switchport mode access
+switchport access vlan 40
+no shutdown
+exit
+!
+! 8. SPANNING TREE AND PORT SECURITY
+interface range gigabitEthernet 1/0-3
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport port-security
+switchport port-security maximum 1
+switchport port-security mac-address sticky
+switchport port-security violation restrict
+!
+! 9. SAVE CONFIGURATION
+end
+write memory
