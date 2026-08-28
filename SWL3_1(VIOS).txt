@@ -56,6 +56,7 @@ interface port-channel 1
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
+spanning-tree guard root
 description LACP TO SW_1
 no shutdown
 exit
@@ -84,6 +85,7 @@ interface port-channel 3
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
+spanning-tree guard root
 description LACP TO SW_3
 no shutdown
 exit
@@ -98,6 +100,7 @@ interface port-channel 4
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
+spanning-tree guard root
 description LACP TO SW_2
 no shutdown
 exit
@@ -112,6 +115,7 @@ interface port-channel 5
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
+spanning-tree guard root
 description LACP TO SW_4
 no shutdown
 exit
