@@ -1,0 +1,41 @@
+configure terminal
+interface gigabitEthernet0/6
+nameif outside
+security-level 0
+ip address 10.0.0.42 255.255.255.0
+no shutdown 
+!
+interface gigabitEthernet 0/0
+nameif inside
+security-level 100
+ip address 10.0.99.254 255.255.255.0 standby 10.0.99.253
+no shutdown 
+!
+route inside 192.168.10.0 255.255.255.0 10.0.99.1
+route inside 192.168.20.0 255.255.255.0 10.0.99.1
+route inside 192.168.30.0 255.255.255.0 10.0.99.1
+route inside 192.168.40.0 255.255.255.0 10.0.99.1
+!
+object network OBJ-INSIDE-NETS
+ subnet 192.168.0.0 255.255.0.0
+nat (inside,outside) source dynamic OBJ-INSIDE-NETS interface
+!
+interface GigabitEthernet 0/1
+ description FAILOVER_LINK
+ no shutdown
+!
+failover
+failover lan unit primary
+failover lan interface FAILOVER_LINK GigabitEthernet0/1
+failover link FAILOVER_LINK GigabitEthernet0/1
+failover interface ip FAILOVER_LINK 192.168.254.1 255.255.255.252 standby 192.168.254.2
+
+!----------------------TODO------------------------
+!
+! 1. Создать redudant interface соединив G0/0 и G0/2
+!
+! 2. Перенести призначение ip на redudant interface
+!
+! 3. Настроить интерфейс смотрящий в сторону Web сервера
+!
+! 4. Добавить алиасы

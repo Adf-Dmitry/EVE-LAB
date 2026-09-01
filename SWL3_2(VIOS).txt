@@ -16,9 +16,12 @@ alias exec seths show etherchannel summary
 alias exec sinb show ip interface brief
 alias exec sis show interface status
 alias exec srun show running-config
-alias exec svrb show vrrp brief
+alias exec stbr show standby brief  
 alias exec stp show spanning-tree
+alias exec svrb show vrrp brief
 alias exec svbr show vlan brief
+alias exec sro show ip route
+alias exec pi8 ping 8.8.8.8
 alias exec svlan show vlan
 !
 ! 4. CONSOLE CONFIGURATION 
@@ -38,162 +41,187 @@ name IT
 vlan 20
 name HR
 !
-vlan 30
-name Admin
+vlan 30 
+name ADMIN
 !
 vlan 40
-name SrvFarm
+name SRVFARM
+!
+vlan 99
+name TRANSIT
 exit
 !
 ! 6. LACP CONFIGURATION 
 !Port-channel-1
 interface range gigabitEthernet 0/0-1
-description TRUNK TO SW_2
+description TRUNK_TO_SW_2
 channel-group 1 mode active
 no shutdown
+exit
 !
 interface port-channel 1 
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
 spanning-tree guard root
-description LACP TO SW_2
+description LACP_TO_SW_2
 no shutdown
 exit
 !
 !Port-channel-2
 interface range gigabitEthernet 1/0-1
-description TRUNK TO SWL3_1 
+description TRUNK_TO_SWL3_1 
 channel-group 2 mode active
 no shutdown
+exit
 !
 interface port-channel 2
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
-description LACP TO SWL3_1
+description LACP_TO_SWL3_1
 no shutdown
 exit
 !
 !Port-channel-8
 interface range gigabitEthernet 2/0-1
-description TRUNK TO SW_3 
+description TRUNK_TO_SW_3 
 channel-group 8 mode active
 no shutdown
+exit
 !
 interface port-channel 8
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
 spanning-tree guard root
-description LACP TO SW_3
+description LACP_TO_SW_3
 no shutdown
 exit
 !
 !Port-channel-4
 interface range gigabitEthernet 0/2-3
-description TRUNK TO SW_1 
+description TRUNK_TO_SW_1 
 channel-group 4 mode active
 no shutdown
+exit
 !
 interface port-channel 4
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
 spanning-tree guard root
-description LACP TO SW_1
-no shutdown
-exit
-!
-!Port-channel-5
-interface range gigabitEthernet 3/2-3
-description TRUNK TO ASA_1 
-channel-group 5 mode active
-no shutdown
-!
-interface port-channel 5
-switchport
-switchport trunk encapsulation dot1q
-switchport mode trunk
-description LACP TO ASA_1
+description LACP_TO_SW_1
 no shutdown
 exit
 !
 !Port-channel-6
 interface range gigabitEthernet 2/2-3
-description TRUNK TO SW_4 
+description TRUNK_TO_SW_4 
 channel-group 6 mode active
 no shutdown
+exit
 !
 interface port-channel 6
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
 spanning-tree guard root
-description LACP TO SW_4
+description LACP_TO_SW_4
 no shutdown
 exit
 !
-!Port-channel-7
-interface range gigabitEthernet 3/0-1
-description TRUNK TO ASA_2
-channel-group 7 mode active
+!7. ACCESS VLAN CONFIG
+interface GigabitEthernet 3/0
+description LINK_TO_ASA_2
+switchport mode access
+switchport access vlan 99
+spanning-tree portfast
 no shutdown
+exit
 !
-interface port-channel 7
-switchport
-switchport trunk encapsulation dot1q
-switchport mode trunk
-description LACP TO ASA_2
+interface GigabitEthernet 3/2
+description LINK_TO_ASA_1
+switchport mode access
+switchport access vlan 99
+spanning-tree portfast
 no shutdown
 exit
 !
 ! 7. VIP AND HSRP
 interface vlan 10
-description GATEWAY FOR IT VLAN 
+description GATEWAY_FOR_IT_VLAN 
 ip address 192.168.10.3 255.255.255.0
-no shutdown
 standby version 2
 standby 10 ip 192.168.10.1
 standby 10 priority 100
 standby 10 preempt 
+no shutdown
 exit
 !
 interface vlan 20
-description GATEWAY FOR HR VLAN
+description GATEWAY_FOR_HR_VLAN
 ip address 192.168.20.3 255.255.255.0
-no shutdown
 standby version 2
 standby 20 ip 192.168.20.1
 standby 20 priority 100
-standby 20 preempt 
+standby 20 preempt
+no shutdown 
 exit
 !
 interface vlan 30
-description GATEWAY FOR HR VLAN
+description GATEWAY_FOR_HR_VLAN
 ip address 192.168.30.3 255.255.255.0
-no shutdown
 standby version 2
 standby 30 ip 192.168.30.1
 standby 30 priority 110
 standby 30 preempt 
+no shutdown
 exit
 !
 interface vlan 40
-description GATEWAY FOR HR VLAN
+description GATEWAY_FOR_HR_VLAN
 ip address 192.168.40.3 255.255.255.0
-no shutdown
 standby version 2
 standby 40 ip 192.168.40.1
 standby 40 priority 110
 standby 40 preempt 
+no shutdown
 exit
 !
-!8. SPANNING TREE (PVST)
+interface vlan 99
+description TRANSIT_TO_ASA
+ip address 10.0.99.3 255.255.255.0
+standby version 2
+standby 99 ip 10.0.99.1
+standby 99 priority 100 
+standby 99 preempt 
+no shutdown
+exit
+!
+!8. IP ROUTING 
+ip route 0.0.0.0 0.0.0.0 10.0.99.254
+!
+!9. SPANNING TREE (PVST)
 spanning-tree vlan 30,40 root primary
-spanning-tree vlan 10,20 root secondary
+spanning-tree vlan 10,20,99 root secondary
 end
-!9. SAVE CONFIGURATION
+!
+!10. SAVE CONFIGURATION
 end
 write memory
-    
+!
+!
+!COMPLETE
+!
+!----------------------TODO------------------------
+!
+! 1. Прописать Allowed VLAN для транковых портов
+!  Port-channel 2    Магистраль до SWL3_2    10,20,30,40,99
+!  Port-channel 1    Уровень доступа SW_2    20
+!  Port-channel 4    Уровень доступа SW_1    10
+!  Port-channel 6    Уровень доступа SW_4    40
+!  Port-channel 8    Уровень доступа SW_3    30
+!
+! 2. Прописать BPDU Guard на портах смотрящих на ASA 
+!

@@ -13,10 +13,8 @@ spanning-tree mode rapid-pvst
 !
 ! 3. ALIAS CONFIGURATION 
 alias exec seths show etherchannel summary
-alias exec sinb show ip interface brief
 alias exec sis show interface status
 alias exec srun show running-config
-alias exec svrb show vrrp brief
 alias exec stp show spanning-tree
 alias exec svbr show vlan brief
 alias exec svlan show vlan
@@ -33,34 +31,70 @@ exit
 ! 5. VLAN CONFIGURATION 
 vlan 10
 name IT
+!
 vlan 20
 name HR
+!
+vlan 30 
+name ADMIN
+!
+vlan 40
+name SRVFARM
 exit
 !
 ! 6. LACP CONFIGURATION 
+!Port-channel-1
 interface range gigabitEthernet 0/0-1
-description TRUNK TO SWL3_2
+description TRUNK_TO_SWL3_2
 channel-group 1 mode active
 no shutdown
+exit
 !
 interface port-channel 1 
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
-description LACP TO SWL3_2
+description LACP_TO_SWL3_2
 no shutdown
 exit
 !
-
-!7. ACCESS VLAN CONFIGURATION 	
+!Port-channel-4
+interface range gigabitEthernet 1/0-1
+description TRUNK_TO_SWL3_1
+channel-group 4 mode active
+no shutdown
+exit
+!
+interface port-channel 4 
+switchport
+switchport trunk encapsulation dot1q
+switchport mode trunk
+description LACP_TO_SWL3_1
+no shutdown
+exit
+!
+! 7. ACCESS VLAN CONFIGURATION 	
 interface range gigabitEthernet 0/2-3
-description LINK TO VLAN HR
+description LINK_TO_VLAN_HR
 switchport
 switchport mode access
 switchport access vlan 20
 no shutdown
 exit
 !
-! 8. SAVE CONFIGURATION
+! 8. SPANNING TREE AND PORT SECURITY
+interface range gigabitEthernet 0/2-3
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport port-security
+switchport port-security maximum 1
+switchport port-security mac-address sticky
+switchport port-security violation restrict
+!
+! 9. SAVE CONFIGURATION
 end
 write memory
+!
+!
+!
+!COMPLETE

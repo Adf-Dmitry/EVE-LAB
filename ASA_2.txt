@@ -1,0 +1,11 @@
+configure terminal
+!
+interface GigabitEthernet 0/1
+ description FAILOVER_LINK
+ no shutdown
+!
+failover
+failover lan unit secondary
+failover lan interface FAILOVER_LINK GigabitEthernet0/1
+failover link FAILOVER_LINK GigabitEthernet0/1
+failover interface ip FAILOVER_LINK 192.168.254.1 255.255.255.252 standby 192.168.254.2
