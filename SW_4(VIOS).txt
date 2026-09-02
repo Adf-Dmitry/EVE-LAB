@@ -14,6 +14,7 @@ spanning-tree mode rapid-pvst
 ! 3. ALIAS CONFIGURATION 
 alias exec seths show etherchannel summary
 alias exec sis show interface status
+alias exec sit show interfaces trunk
 alias exec srun show running-config
 alias exec stp show spanning-tree
 alias exec svbr show vlan brief
@@ -29,17 +30,9 @@ history size 256
 exit
 !
 ! 5. VLAN CONFIGURATION 
-vlan 10
-name IT
-!
-vlan 20
-name HR
-!
-vlan 30 
-name ADMIN
-!
 vlan 40
 name SRVFARM
+!
 exit
 !
 ! 6. LACP CONFIGURATION 
@@ -54,6 +47,7 @@ interface port-channel 5
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
+switchport trunk allowed vlan 40
 description LACP_TO_SWL3_1 
 no shutdown
 exit
@@ -69,6 +63,7 @@ interface port-channel 6
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
+switchport trunk allowed vlan 40
 description LACP_TO_SWL3_2 
 no shutdown
 exit

@@ -1,5 +1,5 @@
 !VIOS L3 SWITCH 1
-!
+!PASTE IN USER MODE (>)
 ! 1. FORCE SHUTDOWN 
 enable
 configure terminal
@@ -15,6 +15,7 @@ spanning-tree mode rapid-pvst
 alias exec seths show etherchannel summary
 alias exec sinb show ip interface brief
 alias exec sis show interface status
+alias exec sit show interfaces trunk
 alias exec srun show running-config
 alias exec stbr show standby brief  
 alias exec stp show spanning-tree
@@ -63,6 +64,7 @@ interface port-channel 1 ! GOOD
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
+switchport trunk  allowed vlan 10
 spanning-tree guard root
 description LACP_TO_SW_1
 no shutdown
@@ -79,6 +81,7 @@ interface port-channel 2
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
+switchport trunk allowed vlan 10,20,30,40,99
 description LACP_TO_SWL3_2
 no shutdown
 exit
@@ -94,6 +97,7 @@ interface port-channel 3
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
+switchport trunk allowed vlan 30
 spanning-tree guard root
 description LACP_TO_SW_3
 no shutdown
@@ -110,6 +114,7 @@ interface port-channel 4
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
+switchport trunk allowed vlan 20
 spanning-tree guard root
 description LACP_TO_SW_2
 no shutdown
@@ -126,6 +131,7 @@ interface port-channel 5
 switchport
 switchport trunk encapsulation dot1q
 switchport mode trunk
+switchport trunk allowed vlan 40
 spanning-tree guard root
 description LACP_TO_SW_4
 no shutdown
@@ -213,15 +219,3 @@ write memory
 !
 !
 !COMPLETE
-!
-!----------------------TODO------------------------
-!
-!1. Прописать Allowed VLAN для транковых портов
-! Port-channel 2    Магистраль до SWL3_2    10,20,30,40,99
-! Port-channel 1    Уровень доступа SW_1    10
-! Port-channel 4    Уровень доступа SW_2    20
-! Port-channel 3    Уровень доступа SW_3    30
-! Port-channel 5    Уровень доступа SW_4    40
-! 
-!2. Прописать BPDU Guard на портах смотрящих на ASA 
-!
