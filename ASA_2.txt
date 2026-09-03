@@ -1,8 +1,9 @@
-configure terminal
-!
+!ASA_2
+!PASTE IN GLOBAL CONFIGURATION MODE (#)
+! 1. FAILOVER
 interface GigabitEthernet 0/1
- description FAILOVER_LINK
- no shutdown
+description FAILOVER_LINK
+no shutdown
 !
 failover
 failover lan unit secondary
