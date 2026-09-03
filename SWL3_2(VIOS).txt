@@ -1,5 +1,5 @@
 !VIOS L3 SWITCH 2
-!
+!PASTE IN USER MODE (>)
 ! 1. FORCE SHUTDOWN 
 enable
 configure terminal
@@ -15,6 +15,7 @@ spanning-tree mode rapid-pvst
 alias exec seths show etherchannel summary
 alias exec sinb show ip interface brief
 alias exec sis show interface status
+alias exec sit show interfaces trunk
 alias exec srun show running-config
 alias exec stbr show standby brief  
 alias exec stp show spanning-tree
@@ -207,14 +208,23 @@ exit
 !8. IP ROUTING 
 ip route 0.0.0.0 0.0.0.0 10.0.99.254
 !
-!9. SPANNING TREE (PVST)
+!9. SPANNING TREE (PVST) AND PORT SECURITY
 spanning-tree vlan 30,40 root primary
 spanning-tree vlan 10,20,99 root secondary
+!
+interface gigabitEthernet 3/0
+spanning-tree bpduguard enable
+spanning-tree portfast
+exit
+!
+interface gigabitEthernet 3/2
+spanning-tree bpduguard enable
+spanning tree portfast
 end
 !
 !10. SAVE CONFIGURATION
-end
 write memory
+!
 !
 !
 !COMPLETE
