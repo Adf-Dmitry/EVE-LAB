@@ -7,9 +7,15 @@ interface range gigabitEthernet 0/0-3, gigabitEthernet 1/0-3, gigabitEthernet 2/
 shutdown 
 exit
 !
-! 2. BASIC TROUBLESHOOTING 
+! 2. BASIC SETTINGS
 vtp mode transparent
 spanning-tree mode rapid-pvst
+banner motd #
++-------------------------------------------+		
+|WARNING! Unauthorized access is prohibited.|
+|All actions in the system are recorded.    |
++-------------------------------------------+
+#
 !
 ! 3. ALIAS CONFIGURATION 
 alias exec seths show etherchannel summary
@@ -176,7 +182,7 @@ no shutdown
 exit
 !
 interface vlan 30
-description GATEWAY_FOR_HR_VLAN
+description GATEWAY_FOR_ADMIN_VLAN
 ip address 192.168.30.3 255.255.255.0
 standby version 2
 standby 30 ip 192.168.30.1
@@ -186,7 +192,7 @@ no shutdown
 exit
 !
 interface vlan 40
-description GATEWAY_FOR_HR_VLAN
+description GATEWAY_FOR_SRV_VLAN
 ip address 192.168.40.3 255.255.255.0
 standby version 2
 standby 40 ip 192.168.40.1
@@ -219,7 +225,7 @@ exit
 !
 interface gigabitEthernet 3/2
 spanning-tree bpduguard enable
-spanning tree portfast
+spanning-tree portfast
 end
 !
 !10. SAVE CONFIGURATION
