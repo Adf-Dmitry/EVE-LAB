@@ -42,6 +42,7 @@ no shutdown
 exit
 !
 ! 5. ROUTING
+route outside 0.0.0.0 0.0.0.0 10.0.0.10
 route inside 192.168.10.0 255.255.255.0 10.0.99.1
 route inside 192.168.20.0 255.255.255.0 10.0.99.1
 route inside 192.168.30.0 255.255.255.0 10.0.99.1
@@ -52,6 +53,12 @@ object network OBJ-INSIDE-NETS
 subnet 192.168.0.0 255.255.0.0
 nat (inside,outside) source dynamic OBJ-INSIDE-NETS interface
 !
-! 7.SAVE CONFIGURATION
+! 7. INSPECTION
+policy-map global_policy
+class inspection_default
+inspect icmp
+inspect icmp error
+!
+! 8. SAVE CONFIGURATION
 end
 write memory
