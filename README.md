@@ -3,5 +3,7 @@ Multilayer computer network
 
 
 **Current Topology**
-<img width="1433" height="817" alt="image" src="https://github.com/user-attachments/assets/353f7834-6a52-437c-8e8f-ea9fd4287fe1" />
+
+<img width="1061" height="557" alt="image" src="https://github.com/user-attachments/assets/50be1fab-dc4c-4e7b-936e-aaa2d65ec9a7" />
+
 
