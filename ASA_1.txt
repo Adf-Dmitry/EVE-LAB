@@ -4,14 +4,14 @@
 hostname ASA-1
 !
 ! 2. REDUDANT INTERFACE CONFIG
-interface gigabitEthernet 0/0
+interface Ethernet 0
 no shutdown
-interface gigabitEthernet 0/2
+interface Ethernet 1
 no shutdown
 !
 interface Redundant 1
-member-interface gigabitEthernet 0/0
-member-interface gigabitEthernet 0/2
+member-interface Ethernet 0
+member-interface Ethernet 1
 exit
 !
 ! 3. NAMEIF CONFIGURATION
@@ -23,18 +23,18 @@ no shutdown
 exit 
 !
 ! 4. FAILOVER
-interface GigabitEthernet 0/1
+interface Ethernet 2
 description FAILOVER_LINK
 no shutdown
 exit
 !
 failover
 failover lan unit primary
-failover lan interface FAILOVER_LINK GigabitEthernet0/1
-failover link FAILOVER_LINK GigabitEthernet0/1
+failover lan interface FAILOVER_LINK Ethernet2
+failover link FAILOVER_LINK Ethernet2
 failover interface ip FAILOVER_LINK 192.168.254.1 255.255.255.252 standby 192.168.254.2
 !
-interface gigabitEthernet0/6
+interface Ethernet 6
 nameif outside
 security-level 0
 ip address 10.0.0.42 255.255.255.0 standby 10.0.0.43
@@ -51,7 +51,7 @@ route inside 192.168.40.0 255.255.255.0 10.0.99.1
 object network OBJ-INSIDE-NETS
 subnet 192.168.0.0 255.255.0.0
 nat (inside,outside) source dynamic OBJ-INSIDE-NETS interface
-exit
 !
-
-!
+! 7.SAVE CONFIGURATION
+end
+write memory
