@@ -4,9 +4,7 @@ Multilayer computer network
 
 **Current Topology**
 
-<img width="1061" height="557" alt="image" src="https://github.com/user-attachments/assets/50be1fab-dc4c-4e7b-936e-aaa2d65ec9a7" />
-
-
+<img width="1662" height="898" alt="image" src="https://github.com/user-attachments/assets/869d4ef9-04e0-4a36-aa25-766eb4123ae8" />
 
 **DEPLOY**
 - Before using this configuratiosns, replace  labels **"REDACTED"** with your passwords
