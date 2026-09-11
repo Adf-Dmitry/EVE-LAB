@@ -8,6 +8,9 @@ shutdown
 exit
 !
 ! 2. BASIC SETTINGS
+username emg_sw4 privilege 15 algorithm-type scrypt secret <REDACTED>
+enable algorithm-type scrypt secret <REDACTED>
+!
 vtp mode transparent
 spanning-tree mode rapid-pvst
 banner motd #
@@ -15,9 +18,12 @@ banner motd #
 |WARNING! Unauthorized access is prohibited.|
 |All actions in the system are recorded.    |
 +-------------------------------------------+
+- Use your RADIUS account to login
+- If RADIUS Server is unavainlable use emergency account
 #
 !
 ! 3. ALIAS CONFIGURATION 
+alias exec sarch show archive log config all
 alias exec seths show etherchannel summary
 alias exec sis show interface status
 alias exec sit show interfaces trunk
@@ -97,11 +103,36 @@ exit
 interface vlan 40
 description MANAGEMENT
 ip address 192.168.40.4 255.255.255.0
+no shutdown
 exit
-configure terminal
 ip default-gateway 192.168.40.1
 !
-! 10. SAVE CONFIGURATION
+! 10. AAA RADIUS 
+aaa new-model
+aaa authentication login default group radius local
+aaa authorization console
+aaa authorization exec default group radius local
+aaa accounting exec default start-stop group radius
+login on-success log
+!
+radius server ALPINE_RADIUS
+address ipv4 192.168.40.20 auth-port 1812 acct-port 1813
+key password-secret
+!
+ip radius source-interface Vlan 40
+!
+line vty 0 4
+login authentication default
+authorization exec default
+!
+! 11. LOGGING
+archive
+log config
+logging enable
+logging size 200
+hidekeys
+!
+! 12. SAVE CONFIGURATION
 end
 write memory
 !
