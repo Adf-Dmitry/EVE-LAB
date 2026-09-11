@@ -1,41 +1,65 @@
-configure terminal
-interface gigabitEthernet0/6
-nameif outside
-security-level 0
-ip address 10.0.0.42 255.255.255.0
-no shutdown 
+!ASA_1
+!PASTE IN GLOBAL CONFIGURATION MODE (#)
 !
-interface gigabitEthernet 0/0
+! 1. CONSOLE CONFIGURATION 
+hostname ASA-1
+!
+! 2. REDUDANT INTERFACE CONFIG
+interface Ethernet 0
+no shutdown
+interface Ethernet 1
+no shutdown
+!
+interface Redundant 1
+member-interface Ethernet 0
+member-interface Ethernet 1
+exit
+!
+! 3. NAMEIF CONFIGURATION
+interface redundant 1
 nameif inside
 security-level 100
 ip address 10.0.99.254 255.255.255.0 standby 10.0.99.253
-no shutdown 
+no shutdown
+exit 
 !
+! 4. FAILOVER
+interface Ethernet 2
+description FAILOVER_LINK
+no shutdown
+exit
+!
+failover
+failover lan unit primary
+failover lan interface FAILOVER_LINK Ethernet2
+failover link FAILOVER_LINK Ethernet2
+failover interface ip FAILOVER_LINK 192.168.254.1 255.255.255.252 standby 192.168.254.2
+!
+interface Ethernet 6
+nameif outside
+security-level 0
+ip address 10.0.0.42 255.255.255.0 standby 10.0.0.43
+no shutdown 
+exit
+!
+! 5. ROUTING
+route outside 0.0.0.0 0.0.0.0 10.0.0.10
 route inside 192.168.10.0 255.255.255.0 10.0.99.1
 route inside 192.168.20.0 255.255.255.0 10.0.99.1
 route inside 192.168.30.0 255.255.255.0 10.0.99.1
 route inside 192.168.40.0 255.255.255.0 10.0.99.1
 !
+! 6. NAT 
 object network OBJ-INSIDE-NETS
- subnet 192.168.0.0 255.255.0.0
+subnet 192.168.0.0 255.255.0.0
 nat (inside,outside) source dynamic OBJ-INSIDE-NETS interface
 !
-interface GigabitEthernet 0/1
- description FAILOVER_LINK
- no shutdown
+! 7. INSPECTION
+policy-map global_policy
+class inspection_default
+inspect icmp
+inspect icmp error
 !
-failover
-failover lan unit primary
-failover lan interface FAILOVER_LINK GigabitEthernet0/1
-failover link FAILOVER_LINK GigabitEthernet0/1
-failover interface ip FAILOVER_LINK 192.168.254.1 255.255.255.252 standby 192.168.254.2
-
-!----------------------TODO------------------------
-!
-! 1. Создать redudant interface соединив G0/0 и G0/2
-!
-! 2. Перенести призначение ip на redudant interface
-!
-! 3. Настроить интерфейс смотрящий в сторону Web сервера
-!
-! 4. Добавить алиасы
+! 8. SAVE CONFIGURATION
+end
+write memory

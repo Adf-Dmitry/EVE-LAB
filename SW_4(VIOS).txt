@@ -7,11 +7,23 @@ interface range gigabitEthernet 0/0-3, gigabitEthernet 1/0-3
 shutdown 
 exit
 !
-! 2. BASIC TROUBLESHOOTING 
+! 2. BASIC SETTINGS
+username emg_sw4 privilege 15 algorithm-type scrypt secret <REDACTED>
+enable algorithm-type scrypt secret <REDACTED>
+!
 vtp mode transparent
 spanning-tree mode rapid-pvst
+banner motd #
++-------------------------------------------+		
+|WARNING! Unauthorized access is prohibited.|
+|All actions in the system are recorded.    |
++-------------------------------------------+
+- Use your RADIUS account to login
+- If RADIUS Server is unavainlable use emergency account
+#
 !
 ! 3. ALIAS CONFIGURATION 
+alias exec sarch show archive log config all
 alias exec seths show etherchannel summary
 alias exec sis show interface status
 alias exec sit show interfaces trunk
@@ -85,8 +97,42 @@ switchport port-security
 switchport port-security maximum 1
 switchport port-security mac-address sticky
 switchport port-security violation restrict
+exit
 !
-! 9. SAVE CONFIGURATION
+! 9. VIP REMOTE MANAGEMENT INT CONFIGURATION
+interface vlan 40
+description MANAGEMENT
+ip address 192.168.40.4 255.255.255.0
+no shutdown
+exit
+ip default-gateway 192.168.40.1
+!
+! 10. AAA RADIUS 
+aaa new-model
+aaa authentication login default group radius local
+aaa authorization console
+aaa authorization exec default group radius local
+aaa accounting exec default start-stop group radius
+login on-success log
+!
+radius server ALPINE_RADIUS
+address ipv4 192.168.40.20 auth-port 1812 acct-port 1813
+key password-secret
+!
+ip radius source-interface Vlan 40
+!
+line vty 0 4
+login authentication default
+authorization exec default
+!
+! 11. LOGGING
+archive
+log config
+logging enable
+logging size 200
+hidekeys
+!
+! 12. SAVE CONFIGURATION
 end
 write memory
 !

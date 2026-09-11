@@ -1,11 +1,16 @@
-configure terminal
-!
-interface GigabitEthernet 0/1
- description FAILOVER_LINK
- no shutdown
+!ASA_2
+!PASTE IN GLOBAL CONFIGURATION MODE (#)
+! 1. FAILOVER
+interface Ethernet 2
+description FAILOVER_LINK
+no shutdown
 !
 failover
 failover lan unit secondary
-failover lan interface FAILOVER_LINK GigabitEthernet0/1
-failover link FAILOVER_LINK GigabitEthernet0/1
+failover lan interface FAILOVER_LINK Ethernet2
+failover link FAILOVER_LINK Ethernet2
 failover interface ip FAILOVER_LINK 192.168.254.1 255.255.255.252 standby 192.168.254.2
+!
+! 2.SAVE CONFIGURATION
+end
+write memory
