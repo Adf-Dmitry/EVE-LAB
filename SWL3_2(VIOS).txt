@@ -1,5 +1,6 @@
 !VIOS L3 SWITCH 2
 !PASTE IN USER MODE (>)
+!
 ! 1. FORCE SHUTDOWN 
 enable
 configure terminal
@@ -8,6 +9,9 @@ shutdown
 exit
 !
 ! 2. BASIC SETTINGS
+username emg_swl3_2 privilege 15 algorithm-type scrypt secret <REDACTED>
+enable algorithm-type scrypt secret <REDACTED>
+!
 vtp mode transparent
 spanning-tree mode rapid-pvst
 banner motd #
@@ -15,9 +19,12 @@ banner motd #
 |WARNING! Unauthorized access is prohibited.|
 |All actions in the system are recorded.    |
 +-------------------------------------------+
+- Use your RADIUS account to login
+- If RADIUS Server is unavainlable use emergency account
 #
 !
 ! 3. ALIAS CONFIGURATION 
+alias exec sarch show archive log config all
 alias exec seths show etherchannel summary
 alias exec sinb show ip interface brief
 alias exec sis show interface status
@@ -160,7 +167,7 @@ spanning-tree portfast
 no shutdown
 exit
 !
-! 7. VIP AND HSRP
+! 8. VIP AND HSRP
 interface vlan 10
 description GATEWAY_FOR_IT_VLAN 
 ip address 192.168.10.3 255.255.255.0
@@ -211,10 +218,17 @@ standby 99 preempt
 no shutdown
 exit
 !
-!8. IP ROUTING 
+! 9. IP ROUTING 
 ip route 0.0.0.0 0.0.0.0 10.0.99.254
+ip route 10.1.1.1 255.255.255.255 10.0.99.2
 !
-!9. SPANNING TREE (PVST) AND PORT SECURITY
+! 10. LOOPBACK INTERFACE
+interface loopback 2
+description MANAGEMENT_2_IF
+ip address 10.2.2.2 255.255.255.255
+exit
+!
+! 11. SPANNING TREE (PVST) AND PORT SECURITY
 spanning-tree vlan 30,40 priority 4096
 spanning-tree vlan 10,20,99 priority 8192
 !
@@ -226,9 +240,36 @@ exit
 interface gigabitEthernet 3/2
 spanning-tree bpduguard enable
 spanning-tree portfast
-end
+exit
 !
-!10. SAVE CONFIGURATION
+! 12. AAA RADIUS
+aaa new-model
+aaa authentication login default group radius local
+aaa authorization console
+aaa authorization exec default group radius local
+aaa accounting exec default start-stop group radius
+login on-success log
+!
+radius server ALPINE_RADIUS
+address ipv4 192.168.40.20 auth-port 1812 acct-port 1813
+key <REDACTED>
+exit
+!
+ip radius source-interface Loopback 2
+!
+line vty 0 4
+login authentication default
+authorization exec default
+!
+! 13. LOGGING 
+archive
+log config
+logging enable
+logging size 200
+hidekeys
+!
+! 14. SAVE CONFIGURATION
+end
 write memory
 !
 !
