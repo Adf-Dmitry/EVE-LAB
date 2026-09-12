@@ -220,6 +220,7 @@ exit
 !
 ! 9. IP ROUTING 
 ip route 0.0.0.0 0.0.0.0 10.0.99.254
+ip route 10.1.1.1 255.255.255.255 10.0.99.2
 !
 ! 10. LOOPBACK INTERFACE
 interface loopback 2
@@ -239,7 +240,7 @@ exit
 interface gigabitEthernet 3/2
 spanning-tree bpduguard enable
 spanning-tree portfast
-end
+exit
 !
 ! 12. AAA RADIUS
 aaa new-model
@@ -252,6 +253,7 @@ login on-success log
 radius server ALPINE_RADIUS
 address ipv4 192.168.40.20 auth-port 1812 acct-port 1813
 key <REDACTED>
+exit
 !
 ip radius source-interface Loopback 2
 !
