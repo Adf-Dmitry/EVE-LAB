@@ -1,5 +1,5 @@
-!VIOS L2 SWITCH 4
-!
+! VIOS L2 SWITCH 1
+! PASTE IN USER MODE (>)
 ! 1. FORCE SHUTDOWN 
 enable
 configure terminal
@@ -117,7 +117,7 @@ login on-success log
 !
 radius server ALPINE_RADIUS
 address ipv4 192.168.40.20 auth-port 1812 acct-port 1813
-key password-secret
+key <REDACTED>
 !
 ip radius source-interface Vlan 40
 !
