@@ -108,7 +108,10 @@ no shutdown
 exit
 ip default-gateway 192.168.30.1
 !
-! 10. AAA RADIUS 
+! 10. NTP
+ntp server 192.168.40.20
+!
+! 11. AAA RADIUS 
 aaa new-model
 aaa authentication login default group radius local
 aaa authorization console
@@ -126,14 +129,14 @@ line vty 0 4
 login authentication default
 authorization exec default
 !
-! 11. LOGGING
+! 12. LOGGING
 archive
 log config
 logging enable
 logging size 200
 hidekeys
 !
-! 12. SAVE CONFIGURATION
+! 13. SAVE CONFIGURATION
 end
 write memory
 !
