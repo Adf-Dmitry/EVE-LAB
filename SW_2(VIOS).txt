@@ -35,6 +35,7 @@ alias exec svlan show vlan
 ! 4. CONSOLE CONFIGURATION 
 hostname SW_2
 no ip domain-lookup
+no ip routing
 line console 0
 logging synchronous
 exec-timeout 0 0
