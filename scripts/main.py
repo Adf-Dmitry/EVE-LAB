@@ -1,7 +1,11 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import os
 import yaml
 from dotenv import load_dotenv
 from netmiko import ConnectHandler
+import subprocess
 
 class NetworkManager:
     def __init__(self, inventory_file='devices.yaml'):
@@ -11,6 +15,20 @@ class NetworkManager:
         self.password = os.getenv("ROUTER_PASS")
         self.inventory_file = inventory_file
         self.devices = self._load_inventory()
+        self.active_devices = []
+
+        self._check_online_devices()
+
+    def _check_online_devices(self):
+        print("Checking for active devices...")
+        for name,config in  self.devices.items():
+            host = config.get('host')
+            if not host:
+                continue
+            command = ['ping','-c','1','-W','1',host]
+            result = subprocess.run(command,stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if result.returncode == 0:
+                self.active_devices.append(name)
 
     def _load_inventory(self):
         with open(self.inventory_file, 'r') as file:
@@ -64,7 +82,9 @@ class NetworkManager:
 
 if __name__ == "__main__":
     lab_manager = NetworkManager("devices.yaml")
+    lab_manager.show_devices()
     close = False
+    
     while not close:
         user_input = input("\n> ").strip().lower()
         match user_input:
@@ -75,7 +95,7 @@ if __name__ == "__main__":
                 selected_device = input("Enter Device Name").strip().lower()
                 cmd_to_run = input(f"Enter Command for {selected_device}").strip()
                 if cmd_to_run:
-                    lab_manager.configure_dedicated_device(selected_device, command="show version")
+                    lab_manager.configure_dedicated_device(selected_device, cmd_to_run)
                 else:
                     print("Invalid Command")
 
