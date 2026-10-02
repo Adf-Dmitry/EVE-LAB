@@ -1,1 +1,31 @@
+core_switch_1:
+  device_type: cisco_ios
+  host: 10.1.1.1
 
+core_switch_2:
+  device_type: cisco_ios
+  host: 10.2.2.2
+
+access_switch_1:
+  device_type: cisco_ios
+  host: 192.168.10.4
+
+access_switch_2:
+  device_type: cisco_ios
+  host: 192.168.20.4
+
+access_switch_3:
+  device_type: cisco_ios
+  host: 192.168.30.4
+
+access_switch_4:
+  device_type: cisco_ios
+  host: 192.168.40.4
+
+asa_1:
+  device_type: cisco_asa
+  host: 10.3.3.3
+
+asa_2:
+  device_type: cisco_asa
+  host: 10.4.4.4
