@@ -17,10 +17,11 @@ class NetworkManager:
         self.devices = self._load_inventory()
         self.active_devices = []
 
-        self._check_online_devices()
+        self.check_online_devices()
 
-    def _check_online_devices(self):
+    def check_online_devices(self):
         print("Checking for active devices...")
+        self.active_devices = []
         for name,config in  self.devices.items():
             host = config.get('host')
             if not host:
@@ -29,6 +30,7 @@ class NetworkManager:
             result = subprocess.run(command,stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if result.returncode == 0:
                 self.active_devices.append(name)
+        self.show_devices()
 
     def _load_inventory(self):
         with open(self.inventory_file, 'r') as file:
@@ -44,14 +46,13 @@ class NetworkManager:
 
     def run_on_all_devices(self, command):
         results = {}
-        self.active_devices = []
 
-        for name, config in self.devices.items():
+        for name in self.active_devices:
+            config = self.devices[name]
             try:
                 output = self.execute_command(config, command)
                 print(output)
                 results[name] = output
-                self.active_devices.append(name)
             except Exception as e:
                 print(f"Failed to connect to {name}: {e}")
         return results
@@ -71,7 +72,6 @@ class NetworkManager:
         if device_name not in self.devices:
             print(f"Device '{device_name}' not found in inventory.")
             return None
-
         try:
             output = self.execute_command(self.devices[device_name], command)
             print(output)
@@ -82,14 +82,13 @@ class NetworkManager:
 
 if __name__ == "__main__":
     lab_manager = NetworkManager("devices.yaml")
-    lab_manager.show_devices()
     close = False
-    
+
     while not close:
         user_input = input("\n> ").strip().lower()
         match user_input:
             case "active":
-                lab_manager.show_devices()
+                lab_manager.check_online_devices()
 
             case "seldev":
                 selected_device = input("Enter Device Name").strip().lower()
