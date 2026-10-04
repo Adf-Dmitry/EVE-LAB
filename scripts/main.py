@@ -1,4 +1,5 @@
 import os
+import sys
 import yaml
 from dotenv import load_dotenv
 from netmiko import ConnectHandler
@@ -14,11 +15,10 @@ class NetworkManager:
         self.devices = self._load_inventory()
         self.active_devices = []
 
-        self.check_online_devices()
-
     def check_online_devices(self):
         print("Checking for active devices...")
         self.active_devices = []
+
         for name,config in  self.devices.items():
             host = config.get('host')
             if not host:
@@ -27,11 +27,19 @@ class NetworkManager:
             result = subprocess.run(command,stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if result.returncode == 0:
                 self.active_devices.append(name)
+
         self.show_devices()
 
     def _load_inventory(self):
-        with open(self.inventory_file, 'r') as file:
-            return yaml.safe_load(file)
+        try:
+            with open(self.inventory_file, 'r') as file:
+                return yaml.safe_load(file)
+        except FileNotFoundError:
+            print(f"Error: Inventory file '{self.inventory_file}' not found.")
+            sys.exit(1)
+        except yaml.YAMLError as e:
+            print(f"Error: parsing YAML file '{self.inventory_file}': {e}")
+            sys.exit(1)
 
     def execute_command(self, device_info, command):
         device_config = device_info.copy()
@@ -50,6 +58,7 @@ class NetworkManager:
                 output = self.execute_command(config, command)
                 print(output)
                 results[name] = output
+
             except Exception as e:
                 print(f"Failed to connect to {name}: {e}")
         return results
@@ -79,6 +88,7 @@ class NetworkManager:
 
 if __name__ == "__main__":
     lab_manager = NetworkManager("devices.yaml")
+    lab_manager.check_online_devices()
     close = False
 
     while not close:
