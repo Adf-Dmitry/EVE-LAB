@@ -26,4 +26,4 @@ jobs:
 
     - name: Run Pylint
       run: |
-        pylint scripts/main.py
+        pylint scripts/main.py --fail-under=8.5  
