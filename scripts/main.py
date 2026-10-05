@@ -2,8 +2,12 @@ import os
 import sys
 import yaml
 from dotenv import load_dotenv
-from netmiko import ConnectHandler
+from netmiko import ConnectHandler, NetmikoTimeoutException
 import subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import typer
+import platform
+
 
 class NetworkManager:
     def __init__(self, inventory_file='devices.yaml'):
@@ -14,6 +18,17 @@ class NetworkManager:
         self.inventory_file = inventory_file
         self.devices = self._load_inventory()
         self.active_devices = []
+        self.current_os = platform.system().lower()
+
+    def _get_ping_command (self, host):
+        match self.current_os:
+            case 'windows':
+                return ['ping', '-n', '1', '-w', '1000', host]
+            case 'darwin' | 'linux':
+                return ['ping', '-c', '1', '-W', '1', host]
+            case _:
+                print(f"Warning: Unknown OS '{self.current_os}'. Defaulting to Unix ping.")
+                return ['ping', '-c', '1', '-W', '1', host]
 
     def check_online_devices(self):
         print("Checking for active devices...")
@@ -23,7 +38,7 @@ class NetworkManager:
             host = config.get('host')
             if not host:
                 continue
-            command = ['ping','-c','1','-W','1',host]
+            command =  self._get_ping_command(host)
             result = subprocess.run(command,stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if result.returncode == 0:
                 self.active_devices.append(name)
@@ -50,17 +65,29 @@ class NetworkManager:
             return net_connect.send_command(command)
 
     def run_on_all_devices(self, command):
+        if not self.active_devices:
+            print("No active devices to run commands on.")
+            return {}
+
         results = {}
+        max_workers = min(len(self.active_devices), 20)
 
-        for name in self.active_devices:
-            config = self.devices[name]
-            try:
-                output = self.execute_command(config, command)
-                print(output)
-                results[name] = output
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_device = {
+                executor.submit(self.execute_command, self.devices[name], command): name
+                for name in self.active_devices
+            }
 
-            except Exception as e:
-                print(f"Failed to connect to {name}: {e}")
+            for future in as_completed(future_to_device):
+                name = future_to_device[future]
+                try:
+                    output = future.result()
+                    print(f"\n[{name}] Output:\n{output}")
+                    results[name] = output
+
+                except NetmikoTimeoutException:
+                    print(f"\nFailed to connect to {name}.")
+
         return results
 
     def show_devices(self):
@@ -82,47 +109,38 @@ class NetworkManager:
             output = self.execute_command(self.devices[device_name], command)
             print(output)
             return output
-        except Exception as e:
-            print(f"Failed to connect to {device_name}: {e}")
+
+        except NetmikoTimeoutException:
+            print(f"Failed to connect to {device_name}")
             return None
 
-if __name__ == "__main__":
-    lab_manager = NetworkManager("devices.yaml")
+app = typer.Typer(help="CLI Utility for managing devices.")
+lab_manager = NetworkManager("devices.yaml")
+
+@app.command()
+def active():
+    """
+    Show active devices.
+    """
     lab_manager.check_online_devices()
-    close = False
 
-    while not close:
-        user_input = input("\n> ").strip().lower()
-        match user_input:
-            case "active":
-                lab_manager.check_online_devices()
+@app.command()
+def seldev(
+    device: str = typer.Option(..., "-d", "--device", help="Name of the device (e.g., core_switch_1)"),
+    command: str = typer.Option(..., "-c", "--command", help="Command to execute")
+):
+    """
+    Execute a command on a specific device using flags.
+    """
+    lab_manager.configure_dedicated_device(device, command)
 
-            case "seldev":
-                selected_device = input("Enter Device Name").strip().lower()
-                cmd_to_run = input(f"Enter Command for {selected_device}").strip()
-                if cmd_to_run:
-                    lab_manager.configure_dedicated_device(selected_device, cmd_to_run)
-                else:
-                    print("Invalid Command")
+@app.command()
+def all_dev (command: str):
+    """
+      Execute a command on all available devices.
+    """
+    lab_manager.check_online_devices()
+    lab_manager.run_on_all_devices(command)
 
-            case "help":
-                print("\nAvailable commands:")
-                print("active  - show active devices")
-                print("seldev  - select one device to configure")
-                print("all     - run command on all available devices")
-                print("help    - show this message")
-                print("exit|quit - exit the program")
-
-            case "all":
-                cmd_to_run = input("Enter Command").strip()
-                if cmd_to_run:
-                    lab_manager.run_on_all_devices(cmd_to_run)
-                else:
-                    print("Invalid Command")
-
-            case "exit" | "quit":
-                print("Exiting...")
-                close = True
-
-            case _:
-                print("Invalid Command. To show a list of available commands enter help")
+if __name__ == "__main__":
+    app()
