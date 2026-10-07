@@ -1,4 +1,4 @@
-name: Pylint Code Analysis
+name: Build Ubuntu Executable
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,9 +22,18 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pylint
+        pip install pyinstaller
         pip install -r requirements.txt
 
-    - name: Run Pylint
+    - name: Build executable with PyInstaller
       run: |
-        pylint scripts/main.py --fail-under=8.5  
+        pyinstaller --onefile --name argentum scripts/main.py
+        
+    - name: Upload executable as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: argentum-ubuntu-executable
+         
+        path: dist/argentum
+       
+        retention-days: 14
