@@ -6,7 +6,7 @@ import sys
 import subprocess
 import platform
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
+from typing import Optional
 import yaml
 import typer
 from dotenv import load_dotenv
@@ -14,12 +14,12 @@ from netmiko import ConnectHandler, NetmikoTimeoutException
 
 class NetworkManager:
     """Manages inventory and connections for network devices."""
-    def __init__(self, inventory_file='devices.yaml'):
+    def __init__(self, inventory):
         self.active_devices = None
         load_dotenv()
         self.username = os.getenv("ROUTER_USER")
         self.password = os.getenv("ROUTER_PASS")
-        self.inventory_file = inventory_file
+        self.inventory_file = inventory
         self.devices = self._load_inventory()
         self.active_devices = []
         self.current_os = platform.system().lower()
@@ -130,42 +130,74 @@ class NetworkManager:
             return None
 
 app = typer.Typer(help="CLI Utility for managing devices.")
-lab_manager = NetworkManager("devices.yaml")
 
+@app.callback(invoke_without_command=True)
+def main(
+    ctx: typer.Context,
+    inventory: str = typer.Option(
+        ...,
+        "-i",
+        "--inventory",
+        help="Inventory file to use, must contain your network devices list in YAML format"
+    ),
+    device: Optional[str] = typer.Option(
+        None,
+        "-d",
+        "--device",
+        help="Name of the device (e.g., core_switch_1)"
+    ),
+    all_devices: Optional[bool] = typer.Option(
+        False,
+        "-a",
+        "--all",
+        help="Select all active devices."
+    ),
+    command: Optional[str] = typer.Option(
+        None,
+        "-c",
+        "--command",
+        help="Command to execute"
+    )
+):
+    """
+    Global initialization of inventory file and default execution.
+    """
+    global lab_manager
+    lab_manager = NetworkManager(inventory)
+
+    if ctx.invoked_subcommand is None:
+        if not command:
+            typer.echo("Error: You must provide a --command (-c) to execute.")
+            raise typer.Exit(code=1)
+
+    if all_devices:
+        if device:
+            typer.echo("Warning: Both --device and --all provided. Ignoring --device and running on all active devices.")
+        lab_manager.check_online_devices()
+        lab_manager.run_on_all_devices(command)
+
+    elif device:
+        lab_manager.configure_dedicated_device(device, command)
+    else:
+        typer.echo(
+            "Error: You must specify a target using either --device (-d) or --all (-a)."
+        )
+        typer.echo(
+            "Examples:"
+        )
+        typer.echo(
+            "   -i devices.yaml -d core_sw_1 -c 'show version'"
+        )
+        typer.echo(
+            "   -i devices.yaml -ac 'show version'"
+        )
+        raise typer.Exit(code=1)
 @app.command()
 def active():
     """
     Show active devices.
     """
     lab_manager.check_online_devices()
-
-@app.command()
-def seldev(
-    device: str = typer.Option(
-        ...,
-        "-d",
-        "--device",
-        help="Name of the device (e.g., core_switch_1)"),
-    command: str = typer.Option(..., "-c", "--command", help="Command to execute")
-):
-    """
-    Execute a command on a specific device using flags.
-    """
-    lab_manager.configure_dedicated_device(device, command)
-
-@app.command()
-def all_devices(
-    command: str = typer.Option(
-        ...,
-        "-c",
-        "--command",
-        help="Command to execute on all active devices")
-):
-    """
-    Execute a command on all available devices.
-    """
-    lab_manager.check_online_devices()
-    lab_manager.run_on_all_devices(command)
 
 if __name__ == "__main__":
     app()
