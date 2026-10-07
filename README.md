@@ -9,100 +9,103 @@ Multilayer computer network
 
 # Argentum
 
-Argentum is a fast, multi-threaded Command Line Interface (CLI) utility for managing and automating network devices. Built with [Typer](https://typer.tiangolo.com/) and [Netmiko](https://github.com/ktbyers/netmiko), it allows network engineers to seamlessly check device availability and execute commands across single or multiple devices concurrently.
+Argentum is a Python-based Command Line Interface (CLI) utility designed for managing and interacting with network devices. It allows network administrators to execute commands on a single device or concurrently across multiple active devices using SSH/Telnet, powered by `netmiko`. 
 
 ## Features
 
-- **Multi-threaded Execution:** Run commands simultaneously across multiple devices using `ThreadPoolExecutor` for drastically reduced execution times.
-- **Smart Device Discovery:** Automatically detects your OS (Windows, Linux, macOS) and pings devices to ensure they are online before attempting SSH connections.
-- **Environment Variable Security:** Safely loads sensitive credentials (usernames and passwords) from a `.env` file.
-- **YAML Inventory:** Easily manage your network inventory using a clean, readable `devices.yaml` format.
-- **Modern CLI:** Provides a user-friendly command-line interface with built-in `--help` menus.
+- **Concurrent Execution:** Run commands simultaneously across multiple active devices using multi-threading.
+- **Cross-Platform Ping Check:** Automatically detects your OS (Windows, macOS, or Linux) and pings devices to ensure they are online before attempting to connect.
+- **YAML Inventory:** Manage your network devices easily using a structured YAML inventory file.
+- **Netmiko Integration:** Supports a vast array of network operating systems (Cisco, Juniper, Arista, HP, etc.).
 
 ## Prerequisites
 
-- **Python 3.10+** (Required for the `match/case` syntax used in OS detection)
-- Python packages: `netmiko`, `typer`, `pyyaml`, `python-dotenv`
+- **Python 3.10+** (Required for structural pattern matching `match/case` support)
+- Network access to the target devices
 
 ## Installation
 
-1. Clone the repository or download the source code.
-2. Create and activate a virtual environment (recommended):
+1. Clone the repository (or download the source code):
    ```bash
-   python -m venv .venv
-   # On Windows:
-   .venv\Scripts\activate
-   # On Linux/macOS:
-   source .venv/bin/activate
+   git clone https://github.com/Adf-Dmitry/EVE-LAB.git
+   cd /EVE-LAB/scripts
    ```
+
+2. Create and activate a virtual environment (optional but recommended):
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   ```
+
 3. Install the required dependencies:
    ```bash
-   pip install netmiko typer pyyaml python-dotenv
+   pip install -r requirements.txt
    ```
 
 ## Configuration
 
-Before running Argentum, you need to set up your credentials and device inventory.
+Before running Argentum, you need to set up your environment variables and your device inventory.
 
-### 1. Credentials (`.env`)
-Create a file named `.env` in the root directory of the project and add your SSH credentials:
+### 1. Environment Variables (`.env`)
+
+Create a `.env` file in the root directory of the project to store your network credentials:
 
 ```env
-ROUTER_USER=admin
-ROUTER_PASS=YourSecurePassword123
+ROUTER_USER=your_admin_username
+ROUTER_PASS=your_super_secret_password
 ```
 
 ### 2. Device Inventory (`devices.yaml`)
-Create a `devices.yaml` file to define your network devices. The structure follows standard Netmiko dictionary arguments. 
+
+Create a YAML file (e.g., `devices.yaml`) containing your device configurations. The key for each device is its name, and the nested properties should map directly to [Netmiko's connection arguments](https://ktbyers.github.io/netmiko/docs/netmiko/index.html).
 
 ```yaml
-core_switch_1:
+core_sw_1:
+  host: 192.168.1.10
   device_type: cisco_ios
-  host: 192.168.10.1
-
-access_switch_2:
-  device_type: cisco_ios
-  host: 192.168.10.2
-
+  
 edge_router_1:
-  device_type: juniper_junos
-  host: 10.0.0.1
+  host: 192.168.1.1
+  device_type: cisco_ios
+
+access_sw_1:
+  host: 10.0.0.50
+  device_type: aruba_os
 ```
-*(Note: Do not include `username` and `password` here, as Argentum automatically injects them from your `.env` file).*
 
 ## Usage
 
-Argentum provides a simple CLI with built-in documentation. You can view all available commands by running:
+Argentum is built with `Typer`, providing a clean CLI experience. 
 
+### Basic Command Structure
 ```bash
-python main_2.py --help
+python main.py -i <inventory_file> [OPTIONS] [COMMAND]
 ```
 
-### Check Active Devices
-To ping all devices in your `devices.yaml` inventory and print a list of reachable hosts:
+### Options
+- `-i, --inventory TEXT`: **(Required)** Path to your YAML inventory file.
+- `-d, --device TEXT`: Name of a specific device to run the command on.
+- `-a, --all`: Select all *active* (pingable) devices in the inventory.
+- `-c, --command TEXT`: The CLI command to execute on the device(s).
 
+### Examples
+
+**1. Run a command on a specific device:**
 ```bash
-python main_2.py active
+python main.py -i devices.yaml -d core_sw_1 -c "show version"
 ```
 
-### Execute a Command on a Specific Device
-Use the `seldev` command with flags to target a specific device from your inventory. 
-* `-d` or `--device`: The name of the device (must match the key in `devices.yaml`).
-* `-c` or `--command`: The CLI command to execute.
-
+**2. Run a command concurrently on ALL active devices:**
 ```bash
-python main_2.py seldev -d core_switch_1 -c "show ip interface brief"
+python main.py -i devices.yaml -a -c "show ip interface brief"
 ```
+*(Note: Argentum will first ping all devices in the YAML file. It will only attempt to connect to the ones that reply to the ping).*
 
-### Execute a Command on All Active Devices
-Use the `all-dev` command to run a specific command across **all online devices** simultaneously. Argentum will first ping all devices and only attempt SSH connections to the active ones.
-
+**3. Check which devices are currently online/active:**
 ```bash
-python main_2.py all-dev "write memory"
+python main.py -i devices.yaml active
 ```
-*(Note: Replace `main_2.py` with your actual script name if you rename the file).*
 
 ## Error Handling
-
-- **Missing Files:** The tool will alert you and exit gracefully if `devices.yaml` is not found or is improperly formatted.
-- **Connection Timeouts:** If a device drops offline between the ping check and the SSH attempt, Netmiko timeout exceptions are caught and reported without crashing the rest of the threads.
+- If both `--device` and `--all` are provided, the script will default to running on **all** active devices.
+- If a device is unreachable via SSH/Telnet, a `NetmikoTimeoutException` is caught, and the script will gently notify you without crashing.
